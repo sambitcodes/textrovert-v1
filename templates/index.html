@@ -1,0 +1,558 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant Hub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4B56D2;
+            --secondary-color: #82C3EC;
+            --accent-color: #F1F6F9;
+            --dark-color: #394867;
+            --light-color: #F8F9FA;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--light-color);
+            color: var(--dark-color);
+        }
+        
+        .navbar {
+            background-color: var(--primary-color);
+        }
+        
+        .nav-link {
+            color: white !important;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background-color: var(--secondary-color);
+            border-radius: 5px;
+        }
+        
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 6px 10px rgba(0,0,0,0.1);
+            border: none;
+            transition: transform 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .result-box {
+            background-color: var(--accent-color);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .tab-content {
+            padding: 30px 0;
+        }
+        
+        .feature-icon {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+        
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 5px solid var(--primary-color);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .key-points {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        
+        .key-points li {
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        .key-points li:before {
+            content: "•";
+            color: var(--primary-color);
+            font-size: 18px;
+            position: absolute;
+            left: 0;
+        }
+        
+        .generated-image {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        pre {
+            background-color: #282c34;
+            color: #abb2bf;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-robot me-2"></i>AI Assistant Hub
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#pdf-tab" data-bs-toggle="pill">
+                            <i class="fas fa-file-pdf feature-icon"></i>PDF Summary
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#wiki-tab" data-bs-toggle="pill">
+                            <i class="fas fa-book feature-icon"></i>Wiki Explorer
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#translate-tab" data-bs-toggle="pill">
+                            <i class="fas fa-language feature-icon"></i>Translator
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#image-tab" data-bs-toggle="pill">
+                            <i class="fas fa-image feature-icon"></i>Image Generator
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#code-tab" data-bs-toggle="pill">
+                            <i class="fas fa-code feature-icon"></i>Code Generator
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="tab-content">
+            <!-- PDF Summary Tab -->
+            <div class="tab-pane fade show active" id="pdf-tab">
+                <div class="row">
+                    <div class="col-lg-6 mx-auto">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-file-pdf me-2"></i>PDF Summarizer
+                            </div>
+                            <div class="card-body">
+                                <form id="pdf-form" enctype="multipart/form-data">
+                                    <div class="mb-3">
+                                        <label for="pdf-file" class="form-label">Upload PDF</label>
+                                        <input type="file" class="form-control" id="pdf-file" name="pdf" accept=".pdf" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="pdf-model" class="form-label">Summarization Type</label>
+                                        <select class="form-select" id="pdf-model" name="model">
+                                            <option value="extractive">Extractive (Key phrases from original)</option>
+                                            <option value="abstractive">Abstractive (Rewritten summary)</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="pdf-word-count" class="form-label">Word Count</label>
+                                        <input type="range" class="form-range" id="pdf-word-count" name="word_count" min="50" max="500" step="50" value="150">
+                                        <span id="pdf-word-count-value">150 words</span>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="fas fa-magic me-2"></i>Generate Summary
+                                    </button>
+                                </form>
+                                <div class="loader" id="pdf-loader"></div>
+                                <div class="result-box" id="pdf-result" style="display: none">
+                                    <h5>Summary</h5>
+                                    <p id="pdf-summary-text"></p>
+                                    <h5>Key Points</h5>
+                                    <ul class="key-points" id="pdf-key-points"></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wiki Explorer Tab -->
+            <div class="tab-pane fade" id="wiki-tab">
+                <div class="row">
+                    <div class="col-lg-6 mx-auto">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-book me-2"></i>Wikipedia Explorer
+                            </div>
+                            <div class="card-body">
+                                <form id="wiki-form">
+                                    <div class="mb-3">
+                                        <label for="wiki-topic" class="form-label">Search Topic</label>
+                                        <input type="text" class="form-control" id="wiki-topic" name="topic" placeholder="e.g. Artificial Intelligence" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="wiki-word-count" class="form-label">Summary Length</label>
+                                        <input type="range" class="form-range" id="wiki-word-count" name="word_count" min="50" max="300" step="50" value="150">
+                                        <span id="wiki-word-count-value">150 words</span>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="fas fa-search me-2"></i>Search & Summarize
+                                    </button>
+                                </form>
+                                <div class="loader" id="wiki-loader"></div>
+                                <div class="result-box" id="wiki-result" style="display: none">
+                                    <h5>Summary</h5>
+                                    <p id="wiki-summary-text"></p>
+                                    
+                                    <h5 class="mt-4">Ask a Question</h5>
+                                    <form id="wiki-question-form">
+                                        <div class="mb-3">
+                                            <input type="text" class="form-control" id="wiki-question" name="question" placeholder="Ask anything about this topic..." required>
+                                            <input type="hidden" id="wiki-question-topic" name="topic">
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-question-circle me-2"></i>Get Answer
+                                        </button>
+                                    </form>
+                                    <div id="wiki-answer-box" style="display: none">
+                                        <h5 class="mt-4">Answer</h5>
+                                        <p id="wiki-answer-text"></p>
+                                        <p class="text-muted small">Confidence: <span id="wiki-answer-confidence"></span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Translator Tab -->
+            <div class="tab-pane fade" id="translate-tab">
+                <div class="row">
+                    <div class="col-lg-6 mx-auto">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-language me-2"></i>Text Translator
+                            </div>
+                            <div class="card-body">
+                                <form id="translate-form">
+                                    <div class="mb-3">
+                                        <label for="translate-text" class="form-label">English Text</label>
+                                        <textarea class="form-control" id="translate-text" name="text" rows="4" placeholder="Enter text to translate..." required></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="translate-language" class="form-label">Target Language</label>
+                                        <select class="form-select" id="translate-language" name="language">
+                                            <option value="hindi">Hindi</option>
+                                            <option value="bengali">Bengali</option>
+                                            <option value="korean">Korean</option>
+                                            <option value="french">French</option>
+                                            <option value="spanish">Spanish</option>
+                                            <option value="japanese">Japanese</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="fas fa-exchange-alt me-2"></i>Translate
+                                    </button>
+                                </form>
+                                <div class="loader" id="translate-loader"></div>
+                                <div class="result-box" id="translate-result" style="display: none">
+                                    <h5>Translation</h5>
+                                    <p id="translated-text"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Image Generator Tab -->
+            <div class="tab-pane fade" id="image-tab">
+                <div class="row">
+                    <div class="col-lg-6 mx-auto">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-image me-2"></i>Image Generator
+                            </div>
+                            <div class="card-body">
+                                <form id="image-form">
+                                    <div class="mb-3">
+                                        <label for="image-prompt" class="form-label">Image Prompt</label>
+                                        <textarea class="form-control" id="image-prompt" name="prompt" rows="3" placeholder="Describe the image you want to generate..." required></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="fas fa-paint-brush me-2"></i>Generate Image
+                                    </button>
+                                </form>
+                                <div class="loader" id="image-loader"></div>
+                                <div class="result-box text-center" id="image-result" style="display: none">
+                                    <h5>Generated Image</h5>
+                                    <img id="generated-image" class="generated-image mt-3" alt="Generated Image">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Code Generator Tab -->
+            <div class="tab-pane fade" id="code-tab">
+                <div class="row">
+                    <div class="col-lg-6 mx-auto">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-code me-2"></i>Code Generator
+                            </div>
+                            <div class="card-body">
+                                <form id="code-form">
+                                    <div class="mb-3">
+                                        <label for="code-question" class="form-label">Programming Question</label>
+                                        <textarea class="form-control" id="code-question" name="question" rows="3" placeholder="Describe what you want to code..." required></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="fas fa-terminal me-2"></i>Generate Code
+                                    </button>
+                                </form>
+                                <div class="loader" id="code-loader"></div>
+                                <div class="result-box" id="code-result" style="display: none">
+                                    <h5>Generated Code</h5>
+                                    <pre id="code-output"></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <div class="container">
+            <p class="mb-0">AI Assistant Hub &copy; 2025</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // PDF Summary
+            $("#pdf-word-count").on("input", function() {
+                $("#pdf-word-count-value").text($(this).val() + " words");
+            });
+            
+            $("#pdf-form").submit(function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                
+                $("#pdf-loader").show();
+                $("#pdf-result").hide();
+                
+                $.ajax({
+                    url: "/pdf-summary",
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(data) {
+                        $("#pdf-loader").hide();
+                        $("#pdf-summary-text").text(data.summary);
+                        
+                        $("#pdf-key-points").empty();
+                        data.key_points.forEach(point => {
+                            $("#pdf-key-points").append(`<li>${point}</li>`);
+                        });
+                        
+                        $("#pdf-result").show();
+                    },
+                    error: function() {
+                        $("#pdf-loader").hide();
+                        alert("An error occurred. Please try again.");
+                    }
+                });
+            });
+            
+            // Wiki Explorer
+            $("#wiki-word-count").on("input", function() {
+                $("#wiki-word-count-value").text($(this).val() + " words");
+            });
+            
+            $("#wiki-form").submit(function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                const topic = $("#wiki-topic").val();
+                
+                $("#wiki-loader").show();
+                $("#wiki-result").hide();
+                $("#wiki-answer-box").hide();
+                
+                $.ajax({
+                    url: "/wiki-summary",
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(data) {
+                        $("#wiki-loader").hide();
+                        $("#wiki-summary-text").text(data.summary);
+                        $("#wiki-question-topic").val(topic);
+                        $("#wiki-result").show();
+                    },
+                    error: function() {
+                        $("#wiki-loader").hide();
+                        alert("An error occurred or topic not found. Please check your spelling and try again.");
+                    }
+                });
+            });
+            
+            $("#wiki-question-form").submit(function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                
+                $("#wiki-answer-box").hide();
+                
+                $.ajax({
+                    url: "/wiki-question",
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(data) {
+                        $("#wiki-answer-text").text(data.answer);
+                        $("#wiki-answer-confidence").text((data.confidence * 100).toFixed(2) + "%");
+                        $("#wiki-answer-box").show();
+                    },
+                    error: function() {
+                        alert("An error occurred. Please try again.");
+                    }
+                });
+            });
+            
+            // Translator
+            $("#translate-form").submit(function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                
+                $("#translate-loader").show();
+                $("#translate-result").hide();
+                
+                $.ajax({
+                    url: "/translate",
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(data) {
+                        $("#translate-loader").hide();
+                        $("#translated-text").text(data.translated_text);
+                        $("#translate-result").show();
+                    },
+                    error: function() {
+                        $("#translate-loader").hide();
+                        alert("An error occurred. Please try again.");
+                    }
+                });
+            });
+            
+            // Image Generator
+            $("#image-form").submit(function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                
+                $("#image-loader").show();
+                $("#image-result").hide();
+                
+                $.ajax({
+                    url: "/image-generation",
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(data) {
+                        $("#image-loader").hide();
+                        $("#generated-image").attr("src", "data:image/jpeg;base64," + data.image);
+                        $("#image-result").show();
+                    },
+                    error: function() {
+                        $("#image-loader").hide();
+                        alert("An error occurred. Please try again.");
+                    }
+                });
+            });
+            
+            // Code Generator
+            $("#code-form").submit(function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                
+                $("#code-loader").show();
+                $("#code-result").hide();
+                
+                $.ajax({
+                    url: "/code-generation",
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(data) {
+                        $("#code-loader").hide();
+                        $("#code-output").text(data.code);
+                        $("#code-result").show();
+                    },
+                    error: function() {
+                        $("#code-loader").hide();
+                        alert("An error occurred. Please try again.");
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
